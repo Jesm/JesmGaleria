@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>JesmGaleria</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../JesmGaleria.css">
+<style>
+	*{
+		margin:0;
+		padding:0;
+	}
+	html, body{
+		width:100%;
+		height:100%;
+	}
+	ul{
+		margin:500px auto;
+		overflow:hidden;
+	}
+	ul li{
+		margin:20px;
+		float:left;
+	}
+	ul a{
+		display:block;
+		width:50px;
+	}
+	ul img{
+		display:block;
+		width:50px;
+		height:50px;
+		background:#0f0;
+	}
+</style>
+</head>
+
+<body>
+	<ul>
+		<li>
+			<a href="img/image1.jpg" title="Imagem 1">
+				<img alt="" src="img/image1_thumb.jpg" width="50" height="50">
+			</a>
+		</li>
+		<li>
+			<a href="img/image2.jpg" title="Imagem 2">
+				<img alt="" src="img/image2_thumb.jpg" width="50" height="50">
+			</a>
+		</li>
+		<li>
+			<a href="img/image3.jpg" title="Imagem 3">
+				<img alt="" src="img/image3_thumb.jpg" width="50" height="50">
+			</a>
+		</li>
+	</ul>
+	<script src="Jesm4.min.js"></script>
+	<script src="JesmDrag.js"></script>
+	<script src="../JesmGaleria.js"></script>
+	<script>
+		Jesm.Core.Galeria.cfg.autoAndar=false;
+		Jesm.Core.Galeria.addLinks(pega('a'));
+		Jesm.Core.Galeria.iniciar();
+	</script>
+</body>
+</html>
