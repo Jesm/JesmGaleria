@@ -1,3 +1,5 @@
+'use strict';
+
 Jesm.Core.Galeria={
 	ativo:false,
 	paused:true,
@@ -28,41 +30,46 @@ Jesm.Core.Galeria={
 	},
 	
 	criarGal:function(str){
-		var JG=this,
-		ret={
-			sit:0,
-			lista:[],
-			addItem:function(a){
-				var index=this.lista.length;
-				Jesm.addEvento(a, 'click', function(e){	
-					e.preventDefault();
-					JG.abrir(this, index);					
-				}, this);
-				this.lista.push(this.novoItem(a));
-			},
-			novoItem:function(a){
-				return {
-					el:a,
-					callback:function(fun){
-						if(this.img)
-							fun.call(this.img);
-						else{
-							this.img=Jesm.loadImg(this.el.href, function(){
-								fun.call(this);
-							});
-						}
-						return this;
-					},
-					cancelLoad:function(){
-						if(this.img&&!this.img.complete)
-							this.img=this.img.onload=null;
-					}
-				};
-			}
-		};
-		
-		return this.galerias[str]=ret;
+		return this.galerias[str]=new this._galleryModel(this);
 	},
+
+	_galleryModel:Jesm.createClass({
+		__construct:function(coreRef){
+			this.coreRef=coreRef;
+			this.sit=0;
+			this.lista=[];
+		},
+		addItem:function(anchor){
+			var gItem=new this.coreRef._galleryItemModel(this, anchor, this.lista.length);
+			this.lista.push(gItem);
+		}
+	}),
+	_galleryItemModel:Jesm.createClass({
+		__construct:function(galRef, anchor, index){
+			this.galRef=galRef;
+			this.el=anchor;
+			this.index=index;
+			Jesm.addEvento(this.el, 'click', this._clickAux, this);
+		},
+		_clickAux:function(e){
+			e.preventDefault();
+			this.galRef.coreRef.abrir(this.galRef, this.index);
+		},
+		callback:function(fun){
+			if(this.img)
+				fun.call(this.img);
+			else{
+				this.img=Jesm.loadImg(this.el.href, function(){
+					fun.call(this);
+				});
+			}
+			return this;
+		},
+		cancelLoad:function(){
+			if(this.img&&!this.img.complete)
+				this.img=this.img.onload=null;
+		}
+	}),
 	
 	abrir:function(gal, index){
 		if(!gal)
@@ -73,27 +80,31 @@ Jesm.Core.Galeria={
 		this.ativar(true);
 		
 		this.html.img.elemento.src=this.cfg.loadingGif;
-		this.guardaEvs.push(Jesm.addEvento(document.body, 'keydown', function(e){
-			// e.preventDefault();?
-			this.lerTeclado(e.which);
-		}, this, true));
+		var numRef=Jesm.addEvento(document.body, 'keydown', this._keyDownAux, this, true);
+		this.guardaEvs.push(numRef);
 		
 		this.html.div.go(this.cfg.tempoAbrir, [1]);
 		this.updatePropsSizes().trocarSlide(index);
 	},
-	
-	fechar:function(){
-		var THIS=this;
-		this.pausar();
-		this.html.move.go(this.cfg.tempoAbrir, [this.tela[0]/2, this.tela[1]/2, 0, 0]);
-		setTimeout(function(){
-			THIS.html.div.go(THIS.cfg.tempoAbrir, [0], function(){			
-				THIS.ativar(false);
-			})
-		}, 150);
-		for(var len=this.guardaEvs.length;len--;Jesm.delEvento(this.guardaEvs.pop()));
+	_keyDownAux:function(e){
+		// e.preventDefault();?
+		this.lerTeclado(e.which);
 	},
 	
+	fechar:function(){
+		this.pausar();
+		this.html.move.go(this.cfg.tempoAbrir, [this.tela[0]/2, this.tela[1]/2, 0, 0]);
+		setTimeout(this._fecharAux, 150);
+		for(var arr=this.guardaEvs;arr.length;)
+			Jesm.delEvento(arr.pop());
+	},
+	_fecharAux:function(){
+		var galCore=Jesm.Core.Galeria;
+		galCore.html.div.go(galCore.cfg.tempoAbrir, [0], function(){			
+			galCore.ativar(false);
+		});
+	},
+
 	ativar:function(bol){
 		this.ativo=bol;
 		if(bol)
@@ -123,7 +134,7 @@ Jesm.Core.Galeria={
 			THIS.mostrarImg(this, function(){
 				THIS.timer.continuar();
 			}).setTitle(a.el.title);
-		});		
+		});
 	},
 	
 	mostrarImg:function(img, depois){
@@ -396,5 +407,6 @@ Jesm.Core.Galeria={
 		
 		document.body.appendChild(frag);
 		return this;
-	}
+	},
+
 };
